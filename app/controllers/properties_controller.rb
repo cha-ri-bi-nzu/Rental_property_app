@@ -1,4 +1,6 @@
 class PropertiesController < ApplicationController
+  before_action :set_property, only: %i[show edit update destroy]
+
   def index
     @properties = Property.all
   end
@@ -10,10 +12,14 @@ class PropertiesController < ApplicationController
 
   def create
     @property = Property.new(property_params)
-    if @property.save
-      redirect_to properties_path(@property)
-    else
+    if params[:back]
       render :new
+    else
+      if @property.save
+        redirect_to properties_path(@property)
+      else
+        render :new
+      end
     end
   end
 
@@ -21,9 +27,16 @@ class PropertiesController < ApplicationController
   end
 
   def edit
+    @property.nearest_stations.build
   end
 
   def update
+    if @property.update(property_params)
+      # binding.pry
+      redirect_to properties_path
+    else
+      render :edit
+    end
   end
 
   def destroy
@@ -31,6 +44,10 @@ class PropertiesController < ApplicationController
 
   private
   def property_params
-    params.require(:property).permit(:name, :rete, :address, :age, :note, nearest_stations_attributes: %i[route station time _destroy])
+    params.require(:property).permit(:name, :rete, :address, :age, :note, nearest_stations_attributes: [:id, :route, :station, :time, :_destroy])
+  end
+
+  def set_property
+    @property = Property.find(params[:id])
   end
 end
