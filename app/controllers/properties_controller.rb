@@ -4,9 +4,17 @@ class PropertiesController < ApplicationController
   end
 
   def new
+    @property = Property.new
+    @property.nearest_stations.build
   end
 
   def create
+    @property = Property.new(property_params)
+    if @property.save
+      redirect_to properties_path(@property)
+    else
+      render :new
+    end
   end
 
   def show
@@ -19,5 +27,10 @@ class PropertiesController < ApplicationController
   end
 
   def destroy
+  end
+
+  private
+  def property_params
+    params.require(:property).permit(:name, :rete, :address, :age, :note, nearest_stations_attributes: %i[route station time _destroy])
   end
 end
